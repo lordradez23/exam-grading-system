@@ -5,11 +5,17 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import BackButton from "@/components/BackButton";
 import LogoutButton from "@/components/LogoutButton";
+import { useToast } from "@/context/ToastContext";
 
 export default function StudentDashboard() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
   const [selectedSession, setSelectedSession] = useState("2023/2024 - 1st Semester");
+  
+  const [reportModalData, setReportModalData] = useState<{courseId: string, name: string} | null>(null);
+  const [reportReason, setReportReason] = useState("");
+  const [reportedCourses, setReportedCourses] = useState<string[]>([]);
 
   // Protect Route
   useEffect(() => {
@@ -27,13 +33,13 @@ export default function StudentDashboard() {
   }
 
   // Calculate Mock Analytics
-  const hasCourses = user.courses && user.courses.length > 0;
-  const totalUnits = hasCourses ? user.courses.length * 3 : 0;
+  const hasCourses = Boolean(user?.courses && user.courses.length > 0);
+  const totalUnits = user?.courses ? user.courses.length * 3 : 0;
   let earnedUnits = 0;
   const gradeCounts = { A: 0, B: 0, C: 0, Pending: 0 };
 
   if (hasCourses) {
-    user.courses.forEach(courseId => {
+    user?.courses?.forEach(courseId => {
       const isPending = courseId.includes("411");
       const isA = courseId.includes("401") || courseId.includes("421");
       
@@ -54,11 +60,11 @@ export default function StudentDashboard() {
         <select 
           value={selectedSession} 
           onChange={(e) => setSelectedSession(e.target.value)}
-          className="bg-transparent border border-[var(--border)] rounded px-3 py-1.5 text-sm font-medium text-[var(--muted)] hover:text-[var(--foreground)] focus:border-[var(--foreground)] focus:text-[var(--foreground)] outline-none transition-colors cursor-pointer"
+          className="bg-[var(--background)] text-[var(--foreground)] border border-[var(--border)] rounded px-3 py-1.5 text-sm font-medium outline-none transition-colors cursor-pointer focus:border-[var(--foreground)]"
         >
-          <option>2023/2024 - 1st Semester</option>
-          <option>2022/2023 - 2nd Semester</option>
-          <option>2022/2023 - 1st Semester</option>
+          <option className="bg-[var(--background)] text-[var(--foreground)]">2023/2024 - 1st Semester</option>
+          <option className="bg-[var(--background)] text-[var(--foreground)]">2022/2023 - 2nd Semester</option>
+          <option className="bg-[var(--background)] text-[var(--foreground)]">2022/2023 - 1st Semester</option>
         </select>
       </div>
       
@@ -122,14 +128,7 @@ export default function StudentDashboard() {
               </p>
             </div>
           ) : (
-            user.courses.map((courseId) => {
-              // Generate mock details deterministically based on courseId
-              const isPending = courseId.includes("411");
-              const isA = courseId.includes("401") || courseId.includes("421");
-              const grade = isPending ? "PENDING" : (isA ? "A" : "C");
-              
-              const gradeColor = grade === "A" ? "text-green-500" : (grade === "C" ? "text-yellow-500" : "text-orange-500 text-sm border border-orange-500/20 bg-orange-500/10 px-2 py-1 rounded-full");
-              
+            user?.courses?.map((courseId) => {
               const mockNames: Record<string, string> = {
                 "CSC 401": "Software Engineering II",
                 "CSC 411": "Artificial Intelligence",
@@ -138,12 +137,32 @@ export default function StudentDashboard() {
                 "GST 101": "Use of English",
                 "PHY 101": "General Physics"
               };
+
+              const isReported = reportedCourses.includes(courseId);
+              const isPending = courseId.includes("411");
+              const isA = courseId.includes("401") || courseId.includes("421");
+              
+              let grade = isPending ? "PENDING" : (isA ? "A" : "C");
+              if (isReported) grade = "IN REVIEW";
+              
+              let gradeColor = grade === "A" ? "text-green-500" : (grade === "C" ? "text-yellow-500" : "text-orange-500 text-sm border border-orange-500/20 bg-orange-500/10 px-2 py-1 rounded-full");
+              if (isReported) gradeColor = "text-yellow-500 text-sm border border-yellow-500/20 bg-yellow-500/10 px-2 py-1 rounded-full";
               
               return (
-                <div key={courseId} className="flex justify-between items-center p-4 rounded border border-[var(--border)] bg-[var(--accent)]/5 hover:bg-[var(--accent)]/10 transition-colors">
+                <div key={courseId} className="flex justify-between items-center p-4 rounded border border-[var(--border)] bg-[var(--accent)]/5 hover:bg-[var(--accent)]/10 transition-colors group">
                   <div>
                     <div className="font-mono text-xs text-[var(--muted)] mb-1">{courseId} • 3 Units</div>
-                    <div className="text-base font-semibold">{mockNames[courseId] || "Course Topic"}</div>
+                    <div className="text-base font-semibold flex items-center gap-3">
+                      {mockNames[courseId] || "Course Topic"}
+                      {!isPending && !isReported && (
+                        <button 
+                          onClick={() => setReportModalData({ courseId, name: mockNames[courseId] || "Course Topic" })}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity text-xs px-2 py-1 bg-[var(--background)] border border-[var(--border)] rounded text-[var(--muted)] hover:text-[var(--foreground)]"
+                        >
+                          Report Error
+                        </button>
+                      )}
+                    </div>
                   </div>
                   <div className={`font-bold text-2xl ${gradeColor}`}>{grade}</div>
                 </div>
@@ -172,6 +191,56 @@ export default function StudentDashboard() {
           </button>
         </div>
       </div>
+
+      {/* Report Modal */}
+      {reportModalData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm fade-in">
+          <div className="bg-[var(--background)] border border-[var(--border)] rounded-2xl p-8 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200">
+            <h3 className="text-xl font-bold mb-2">Report Error</h3>
+            <p className="text-[var(--muted)] text-sm mb-6">
+              File a dispute for <span className="font-mono">{reportModalData.courseId}</span>. The Faculty Admin will review your result.
+            </p>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">Reason for Review</label>
+              <textarea 
+                rows={3}
+                placeholder="e.g., My continuous assessment score is missing..."
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+                className="w-full px-4 py-2 border border-[var(--border)] rounded focus:outline-none focus:border-[var(--foreground)] bg-transparent resize-none"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => {
+                  setReportModalData(null);
+                  setReportReason("");
+                }}
+                className="px-4 py-2 font-medium text-[var(--muted)] rounded hover:bg-[var(--accent)]/5 hover:text-[var(--foreground)] transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  if (reportReason.trim().length > 5) {
+                    setReportedCourses(prev => [...prev, reportModalData.courseId]);
+                    toast(`Report submitted for ${reportModalData.courseId}`, "success");
+                    setReportModalData(null);
+                    setReportReason("");
+                  } else {
+                    toast("Please provide a valid reason", "error");
+                  }
+                }}
+                className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] font-medium rounded hover:opacity-90 transition-opacity"
+              >
+                Submit Report
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
