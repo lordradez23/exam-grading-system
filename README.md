@@ -36,9 +36,37 @@ We are actively polishing the frontend to premium standards before migrating to 
 - **Confirmation Modals**: Adding robust verification dialogs for critical faculty actions like approving grades.
 
 ## Future Road Map: Real-Time Backend Transition
-- **WebSocket/SSE Integration**: Upgrading mocked states to live, instant updates across all active dashboards.
-- **PostgreSQL & Multer**: Replacing the mock CSV upload with actual server-side `.csv` parsing, curve calculation, and bulk database inserts.
-- **JWT Cryptography**: Upgrading the mock LocalStorage context to stateless, HTTP-only secure cookies with Bcrypt password hashing.
+
+The upcoming phases will transition the mocked application to a fully functional full-stack Next.js architecture using Route Handlers. Below are the planned stages and the exact directories/files that will be created or modified:
+
+### 1. Database & Architecture Setup
+*Creating the tables and connecting the app to the database.*
+- **`db/schema.sql`** *(New)*: PostgreSQL commands to create `users`, `courses`, and `grades` tables.
+- **`.env.local`** *(New)*: Secret database URLs and API keys.
+- **`src/lib/supabase.ts`** *(New)*: Utility file to initialize the secure connection to the database.
+
+### 2. Authentication Security
+*Replacing mock-login with real, encrypted sessions.*
+- **`src/app/api/auth/register/route.ts`** *(New)*: Endpoint that hashes the password using `bcrypt` and saves the user.
+- **`src/app/api/auth/login/route.ts`** *(New)*: Endpoint that verifies the password and issues a secure, HTTP-only JWT cookie.
+- **`src/context/AuthContext.tsx`** *(Modified)*: Rewrite to verify the user's session with the backend instead of LocalStorage.
+
+### 3. Building Core APIs
+*The pipelines for requesting and updating grades securely.*
+- **`src/app/api/student/grades/route.ts`** *(New)*: Queries the database for the logged-in student's grades.
+- **`src/app/api/faculty/submissions/route.ts`** *(New)*: Fetches all student grades for the Admin table.
+- **`src/app/api/faculty/grades/approve/route.ts`** *(New)*: Protected `POST` endpoint to bulk-approve grades.
+
+### 4. CSV Upload Engine
+*Parsing files and inserting hundreds of rows at once.*
+- **`src/lib/csvParser.ts`** *(New)*: Utility that reads raw CSV files, calculates the curve based on raw scores, and formats the data.
+- **`src/app/api/faculty/upload/route.ts`** *(New)*: Endpoint that receives the `.csv`, parses it, and runs a "Bulk Insert" command.
+- **`src/app/dashboard/page.tsx`** *(Modified)*: Update `handleFileUpload` to send the file to the new API using `FormData`.
+
+### 5. Real-Time Synchronization
+*WebSockets for instant updates without refreshing.*
+- **`src/app/dashboard/page.tsx`** *(Modified)*: Adds a hook to subscribe to database changes so dispute reports appear instantly.
+- **`src/app/student/page.tsx`** *(Modified)*: Adds a hook to instantly change a `PENDING` badge to a real grade the moment an Admin clicks "Approve".
 
 ## System Architecture
 
