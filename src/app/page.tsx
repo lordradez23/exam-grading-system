@@ -51,24 +51,6 @@ export default function Home() {
               </>
             )}
 
-            <div className="grid grid-cols-4 gap-4 pt-12 border-t border-[var(--border)]">
-              <div>
-                <div className="font-bold text-sm">Schema v2.4</div>
-                <div className="text-xs text-[var(--muted)]">Current Database</div>
-              </div>
-              <div>
-                <div className="font-bold text-sm">Active</div>
-                <div className="text-xs text-[var(--muted)]">System Status</div>
-              </div>
-              <div>
-                <div className="font-bold text-sm">2023/2024</div>
-                <div className="text-xs text-[var(--muted)]">Academic Session</div>
-              </div>
-              <div>
-                <div className="font-bold text-sm">Admin</div>
-                <div className="text-xs text-[var(--muted)]">Support Contact</div>
-              </div>
-            </div>
           </div>
           
           <div className="relative h-[450px] rounded-xl border border-[var(--border)] bg-[var(--background)]/50 backdrop-blur-sm shadow-2xl p-6 fade-in hover-lift flex flex-col justify-center">
