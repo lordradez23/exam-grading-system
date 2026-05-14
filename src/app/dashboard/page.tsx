@@ -13,6 +13,12 @@ export default function FacultyDashboard() {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const [confirmApproveId, setConfirmApproveId] = useState<string | null>(null);
+  
+  // New States for Edit and View All
+  const [editModalData, setEditModalData] = useState<{id: string, score: number, matric: string, course: string} | null>(null);
+  const [newScore, setNewScore] = useState<number | "">("");
+  const [showAll, setShowAll] = useState(false);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Mock Data State
@@ -22,6 +28,9 @@ export default function FacultyDashboard() {
     { id: "3", matric: "VUB/20/CSC/088", course: "CSC 401", score: 71, grade: "B", status: "Pending Approval" },
     { id: "4", matric: "VUB/20/CSC/023", course: "CSC 499", score: 88, grade: "A", status: "Approved" },
     { id: "5", matric: "VUB/20/CSC/056", course: "CSC 411", score: 45, grade: "D", status: "Requires Review" },
+    { id: "6", matric: "VUB/20/CSC/102", course: "CSC 421", score: 55, grade: "C", status: "Pending Approval" },
+    { id: "7", matric: "VUB/20/CSC/114", course: "CSC 411", score: 38, grade: "F", status: "Requires Review" },
+    { id: "8", matric: "VUB/20/CSC/005", course: "CSC 401", score: 92, grade: "A", status: "Approved" },
   ]);
 
   // Protect Route
@@ -39,11 +48,9 @@ export default function FacultyDashboard() {
     const file = e.target.files?.[0];
     if (file) {
       setIsUploading(true);
-      // Simulate file processing and upload delay
       setTimeout(() => {
         setIsUploading(false);
         toast(`Successfully processed ${file.name}. Grades have been uploaded!`, "success");
-        // Reset the input so the same file can be uploaded again if needed
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
@@ -53,7 +60,6 @@ export default function FacultyDashboard() {
 
   const handleConfirmApprove = () => {
     if (confirmApproveId) {
-      // Optimistically update the state to "Approved"
       setRecentSubmissions(prev => 
         prev.map(sub => sub.id === confirmApproveId ? { ...sub, status: "Approved" } : sub)
       );
@@ -62,9 +68,67 @@ export default function FacultyDashboard() {
     }
   };
 
+  const handleSaveEdit = () => {
+    if (editModalData && newScore !== "") {
+      const scoreNum = Number(newScore);
+      if (scoreNum >= 0 && scoreNum <= 100) {
+        // Calculate new grade
+        let newGrade = "F";
+        if (scoreNum >= 70) newGrade = "A";
+        else if (scoreNum >= 60) newGrade = "B";
+        else if (scoreNum >= 50) newGrade = "C";
+        else if (scoreNum >= 45) newGrade = "D";
+        
+        setRecentSubmissions(prev => 
+          prev.map(sub => sub.id === editModalData.id 
+            ? { ...sub, score: scoreNum, grade: newGrade, status: "Pending Approval" } 
+            : sub
+          )
+        );
+        toast(`Score updated for ${editModalData.matric}`, "success");
+        setEditModalData(null);
+      } else {
+        toast("Score must be between 0 and 100", "error");
+      }
+    }
+  };
+
   if (isLoading || !user || (user.role !== "Admin" && user.role !== "Faculty")) {
     return <div className="p-20 text-center text-[var(--muted)]">Loading dashboard...</div>;
   }
+
+  // Search & Filter Logic
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+
+  const filteredSubmissions = recentSubmissions.filter(sub => {
+    const matchesSearch = sub.matric.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          sub.course.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "All" || sub.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const displayedSubmissions = showAll ? filteredSubmissions : filteredSubmissions.slice(0, 4);
+
+  // Dynamic Metrics
+  const pendingCount = recentSubmissions.filter(s => s.status === "Pending Approval" || s.status === "Requires Review").length;
+  const approvedCount = recentSubmissions.filter(s => s.status === "Approved").length;
+
+  const handleBulkApprove = () => {
+    const pendingIds = filteredSubmissions
+      .filter(sub => sub.status !== "Approved")
+      .map(sub => sub.id);
+
+    if (pendingIds.length === 0) {
+      toast("No pending submissions found in current view.", "info");
+      return;
+    }
+
+    setRecentSubmissions(prev => 
+      prev.map(sub => pendingIds.includes(sub.id) ? { ...sub, status: "Approved" } : sub)
+    );
+    toast(`Successfully bulk approved ${pendingIds.length} submissions!`, "success");
+  };
 
   return (
     <div className="w-full max-w-7xl mx-auto px-8 py-12 fade-in">
@@ -76,6 +140,12 @@ export default function FacultyDashboard() {
           <p className="text-[var(--muted)]">Welcome back, {user.name}. Here is your academic overview.</p>
         </div>
         <div className="flex gap-4">
+          <button 
+            onClick={handleBulkApprove}
+            className="px-4 py-2 border border-[var(--border)] text-[var(--foreground)] font-medium rounded text-sm hover:bg-[var(--accent)]/5 transition-colors"
+          >
+            Bulk Approve Pending
+          </button>
           <input 
             type="file" 
             accept=".csv,.xlsx" 
@@ -103,21 +173,46 @@ export default function FacultyDashboard() {
         </div>
         <div className="p-6 border border-[var(--border)] rounded-xl bg-[var(--background)] shadow-sm hover-lift">
           <div className="text-sm font-medium text-[var(--muted)] mb-2">Grades Processed</div>
-          <div className="text-4xl font-bold">8,402</div>
-          <div className="text-xs text-[var(--muted)] mt-2">Current session only</div>
+          <div className="text-4xl font-bold">{(8402 + approvedCount).toLocaleString()}</div>
+          <div className="text-xs text-[var(--muted)] mt-2">Live mock data sync</div>
         </div>
         <div className="p-6 border border-[var(--border)] rounded-xl bg-[var(--background)] shadow-sm hover-lift">
           <div className="text-sm font-medium text-[var(--muted)] mb-2">Pending Approvals</div>
-          <div className="text-4xl font-bold text-orange-500">24</div>
-          <div className="text-xs text-[var(--muted)] mt-2">Requires Senate confirmation</div>
+          <div className={`text-4xl font-bold ${pendingCount > 0 ? 'text-orange-500' : 'text-green-500'}`}>{pendingCount}</div>
+          <div className="text-xs text-[var(--muted)] mt-2">{pendingCount > 0 ? 'Requires attention' : 'All caught up!'}</div>
         </div>
       </div>
 
       {/* Recent Activity Table */}
       <div className="border border-[var(--border)] rounded-xl bg-[var(--background)] overflow-hidden shadow-lg">
-        <div className="px-6 py-4 border-b border-[var(--border)] bg-[var(--accent)]/5 flex justify-between items-center">
-          <h2 className="font-semibold">Recent Grade Submissions</h2>
-          <button className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors">View All &rarr;</button>
+        <div className="px-6 py-4 border-b border-[var(--border)] bg-[var(--accent)]/5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <h2 className="font-semibold">Student Submissions</h2>
+          
+          <div className="flex flex-col sm:flex-row gap-3 flex-1 md:justify-end">
+            <input 
+              type="text" 
+              placeholder="Search Matric No or Course..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="px-3 py-1.5 border border-[var(--border)] rounded text-sm bg-[var(--background)] focus:outline-none focus:border-[var(--foreground)] min-w-[200px]"
+            />
+            <select 
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-1.5 border border-[var(--border)] rounded text-sm bg-[var(--background)] focus:outline-none focus:border-[var(--foreground)]"
+            >
+              <option value="All">All Statuses</option>
+              <option value="Pending Approval">Pending Approval</option>
+              <option value="Approved">Approved</option>
+              <option value="Requires Review">Requires Review</option>
+            </select>
+            <button 
+              onClick={() => setShowAll(!showAll)}
+              className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors px-2 whitespace-nowrap"
+            >
+              {showAll ? "View Less" : "View All"} {showAll ? "↑" : "→"}
+            </button>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
@@ -132,7 +227,7 @@ export default function FacultyDashboard() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--border)]">
-              {recentSubmissions.length === 0 ? (
+              {displayedSubmissions.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-6 py-12 text-center">
                     <div className="flex flex-col items-center justify-center">
@@ -147,7 +242,7 @@ export default function FacultyDashboard() {
                   </td>
                 </tr>
               ) : (
-                recentSubmissions.map((sub) => (
+                displayedSubmissions.map((sub) => (
                   <tr key={sub.id} className="hover:bg-[var(--accent)]/5 transition-colors">
                     <td className="px-6 py-4 font-mono font-medium">{sub.matric}</td>
                     <td className="px-6 py-4">{sub.course}</td>
@@ -163,7 +258,15 @@ export default function FacultyDashboard() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right space-x-3">
-                      <button className="text-[var(--muted)] hover:text-[var(--foreground)] font-medium transition-colors">Edit</button>
+                      <button 
+                        onClick={() => {
+                          setEditModalData(sub);
+                          setNewScore(sub.score);
+                        }}
+                        className="text-[var(--muted)] hover:text-[var(--foreground)] font-medium transition-colors"
+                      >
+                        Edit
+                      </button>
                       {sub.status !== 'Approved' && (
                         <button 
                           onClick={() => setConfirmApproveId(sub.id)}
@@ -201,6 +304,44 @@ export default function FacultyDashboard() {
                 className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] font-medium rounded hover:opacity-90 transition-opacity"
               >
                 Confirm Approve
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Modal */}
+      {editModalData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm fade-in">
+          <div className="bg-[var(--background)] border border-[var(--border)] rounded-2xl p-8 max-w-sm w-full shadow-2xl animate-in zoom-in-95 duration-200">
+            <h3 className="text-xl font-bold mb-2">Edit Score</h3>
+            <p className="text-[var(--muted)] text-sm mb-6">
+              Modify the raw score for <span className="font-mono">{editModalData.matric}</span> ({editModalData.course}). The curve grade will be automatically recalculated.
+            </p>
+            
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">Raw Score (0-100)</label>
+              <input 
+                type="number" 
+                min="0" max="100"
+                value={newScore}
+                onChange={(e) => setNewScore(e.target.value ? Number(e.target.value) : "")}
+                className="w-full px-4 py-2 border border-[var(--border)] rounded focus:outline-none focus:border-[var(--foreground)] bg-transparent"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button 
+                onClick={() => setEditModalData(null)}
+                className="px-4 py-2 font-medium text-[var(--muted)] rounded hover:bg-[var(--accent)]/5 hover:text-[var(--foreground)] transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleSaveEdit}
+                className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] font-medium rounded hover:opacity-90 transition-opacity"
+              >
+                Save Changes
               </button>
             </div>
           </div>
