@@ -37,36 +37,36 @@ We are actively polishing the frontend to premium standards before migrating to 
 
 ## Future Road Map: Real-Time Backend Transition
 
-The upcoming phases will transition the mocked application to a fully functional full-stack Next.js architecture using Route Handlers. Below are the planned stages and the exact directories/files that will be created or modified:
+The project is currently preparing to migrate from mock frontend state to a robust, real-time backend using Next.js Route Handlers and Supabase. The migration is broken down into 5 distinct stages:
 
 ### 1. Database & Architecture Setup
-*Creating the tables and connecting the app to the database.*
-- **`db/schema.sql`** *(New)*: PostgreSQL commands to create `users`, `courses`, and `grades` tables.
-- **`.env.local`** *(New)*: Secret database URLs and API keys.
-- **`src/lib/supabase.ts`** *(New)*: Utility file to initialize the secure connection to the database.
+*Creating the relational tables and connecting the app to the database.*
+- `db/schema.sql`: PostgreSQL commands for `users`, `courses`, and `grades` tables.
+- `.env.local`: Secure environment variables.
+- `src/lib/supabase.ts`: Supabase client connection utility.
 
 ### 2. Authentication Security
-*Replacing mock-login with real, encrypted sessions.*
-- **`src/app/api/auth/register/route.ts`** *(New)*: Endpoint that hashes the password using `bcrypt` and saves the user.
-- **`src/app/api/auth/login/route.ts`** *(New)*: Endpoint that verifies the password and issues a secure, HTTP-only JWT cookie.
-- **`src/context/AuthContext.tsx`** *(Modified)*: Rewrite to verify the user's session with the backend instead of LocalStorage.
+*Replacing mock-login with real, encrypted passwords and JWT sessions.*
+- `src/app/api/auth/register/route.ts`: Secure signup endpoint with Bcrypt password hashing.
+- `src/app/api/auth/login/route.ts`: Login endpoint issuing HTTP-only JWT cookies.
+- `src/context/AuthContext.tsx`: Upgraded to automatically verify the backend session.
 
 ### 3. Building Core APIs
-*The pipelines for requesting and updating grades securely.*
-- **`src/app/api/student/grades/route.ts`** *(New)*: Queries the database for the logged-in student's grades.
-- **`src/app/api/faculty/submissions/route.ts`** *(New)*: Fetches all student grades for the Admin table.
-- **`src/app/api/faculty/grades/approve/route.ts`** *(New)*: Protected `POST` endpoint to bulk-approve grades.
+*Setting up the data pipelines for secure requests and updates.*
+- `src/app/api/student/grades/route.ts`: Queries specific grades for the logged-in student.
+- `src/app/api/faculty/submissions/route.ts`: Fetches all student grades for the Admin view.
+- `src/app/api/faculty/grades/approve/route.ts`: A protected endpoint to update grade statuses to "Approved".
 
 ### 4. CSV Upload Engine
-*Parsing files and inserting hundreds of rows at once.*
-- **`src/lib/csvParser.ts`** *(New)*: Utility that reads raw CSV files, calculates the curve based on raw scores, and formats the data.
-- **`src/app/api/faculty/upload/route.ts`** *(New)*: Endpoint that receives the `.csv`, parses it, and runs a "Bulk Insert" command.
-- **`src/app/dashboard/page.tsx`** *(Modified)*: Update `handleFileUpload` to send the file to the new API using `FormData`.
+*Building the logic to parse raw files and bulk-insert data.*
+- `src/lib/csvParser.ts`: Utility to parse CSV files and calculate the curve on the server.
+- `src/app/api/faculty/upload/route.ts`: API route accepting FormData to execute bulk database inserts.
+- `src/app/dashboard/page.tsx`: Upgraded to send real file payloads to the upload API.
 
 ### 5. Real-Time Synchronization
-*WebSockets for instant updates without refreshing.*
-- **`src/app/dashboard/page.tsx`** *(Modified)*: Adds a hook to subscribe to database changes so dispute reports appear instantly.
-- **`src/app/student/page.tsx`** *(Modified)*: Adds a hook to instantly change a `PENDING` badge to a real grade the moment an Admin clicks "Approve".
+*Hooking up WebSockets for instant updates without refreshing.*
+- `src/app/dashboard/page.tsx`: Subscribes to database changes so student disputes appear instantly.
+- `src/app/student/page.tsx`: Subscribes to database changes so admin approvals instantly update the student's transcript.
 
 ## System Architecture
 
