@@ -278,7 +278,7 @@ CREATE TABLE Grades (
              </div>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* Footer (Only on Landing Page) */}
       <footer className="w-full bg-[var(--background)] border-t border-[var(--border)] pt-16 pb-8 mt-auto">

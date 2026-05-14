@@ -57,7 +57,7 @@ export default function Login() {
 
   return (
     <div className="w-full max-w-md mx-auto px-8 py-20 fade-in">
-      <BackButton />
+      <BackButton href="/" />
       <div className="p-8 border border-[var(--border)] rounded-xl bg-[var(--background)] shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--foreground)] to-transparent opacity-50"></div>
         
