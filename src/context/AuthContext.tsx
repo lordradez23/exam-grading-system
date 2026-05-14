@@ -3,7 +3,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-// Define the shape of our User object
 export type User = {
   id: string;
   name: string;
@@ -15,11 +14,14 @@ export type User = {
   courses?: string[];
 };
 
-// Define the shape of our context
 type AuthContextType = {
   user: User | null;
+  token: string | null;
   login: (email: string, password: string) => Promise<boolean>;
-  signup: (name: string, email: string, password: string, role: "Faculty" | "Student", matricNo?: string, department?: string, level?: string, courses?: string[]) => Promise<boolean>;
+  signup: (
+    name: string, email: string, password: string, role: "Faculty" | "Student",
+    matricNo?: string, department?: string, level?: string, courses?: string[]
+  ) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
 };
@@ -28,103 +30,64 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  // On initial load, check if there's a session in localStorage
   useEffect(() => {
-    const session = localStorage.getItem("veritas_session");
-    if (session) {
-      setUser(JSON.parse(session));
+    const stored = localStorage.getItem("veritas_session");
+    const storedToken = localStorage.getItem("veritas_token");
+    if (stored && storedToken) {
+      setUser(JSON.parse(stored));
+      setToken(storedToken);
     }
     setIsLoading(false);
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    // 1. Check Hardcoded Admin Exception
-    if (email.toLowerCase() === "admin@gmail.com" && password === "Admin123") {
-      const adminUser: User = { id: "admin-1", name: "System Admin", email, role: "Admin" };
-      setUser(adminUser);
-      localStorage.setItem("veritas_session", JSON.stringify(adminUser));
-      return true;
-    }
-
-    // 2. Check LocalStorage for registered users
-    const usersStr = localStorage.getItem("veritas_users");
-    if (usersStr) {
-      const users = JSON.parse(usersStr);
-      // Find user with matching email and password
-      const foundUser = users.find((u: any) => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
-      
-      if (foundUser) {
-        // Strip password before setting session
-        const sessionUser: User = { 
-          id: foundUser.id, 
-          name: foundUser.name, 
-          email: foundUser.email, 
-          role: foundUser.role,
-          matricNo: foundUser.matricNo,
-          department: foundUser.department,
-          level: foundUser.level,
-          courses: foundUser.courses || []
-        };
-        setUser(sessionUser);
-        localStorage.setItem("veritas_session", JSON.stringify(sessionUser));
-        return true;
-      }
-    }
-
-    return false; // Login failed
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    setUser(data.user);
+    setToken(data.token);
+    localStorage.setItem("veritas_session", JSON.stringify(data.user));
+    localStorage.setItem("veritas_token", data.token);
+    return true;
   };
 
-  const signup = async (name: string, email: string, password: string, role: "Faculty" | "Student", matricNo?: string, department?: string, level?: string, courses?: string[]): Promise<boolean> => {
-    // Get existing users
-    const usersStr = localStorage.getItem("veritas_users");
-    const users = usersStr ? JSON.parse(usersStr) : [];
-
-    // Check if email already exists
-    if (users.find((u: any) => u.email.toLowerCase() === email.toLowerCase()) || email.toLowerCase() === "admin@gmail.com") {
-      return false; // Email taken
-    }
-
-    // Create new user record
-    const newUser = {
-      id: Math.random().toString(36).substr(2, 9),
-      name,
-      email,
-      password,
-      role,
-      matricNo,
-      department,
-      level,
-      courses: courses || []
-    };
-
-    // Save to local storage
-    users.push(newUser);
-    localStorage.setItem("veritas_users", JSON.stringify(users));
-    
-    return true; // Signup successful
+  const signup = async (
+    name: string, email: string, password: string, role: "Faculty" | "Student",
+    matricNo?: string, department?: string, level?: string, courses?: string[]
+  ): Promise<boolean> => {
+    const res = await fetch('/api/auth/signup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password, role, matricNo, department, level, courses }),
+    });
+    return res.ok;
   };
 
   const logout = () => {
     setUser(null);
+    setToken(null);
     localStorage.removeItem("veritas_session");
+    localStorage.removeItem("veritas_token");
     router.push("/");
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, token, login, signup, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-// Custom hook to use the auth context
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
+  if (!context) throw new Error("useAuth must be used within an AuthProvider");
   return context;
 }
