@@ -12,13 +12,14 @@ export type User = {
   matricNo?: string;
   department?: string;
   level?: string;
+  courses?: string[];
 };
 
 // Define the shape of our context
 type AuthContextType = {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
-  signup: (name: string, email: string, password: string, role: "Faculty" | "Student", matricNo?: string, department?: string, level?: string) => Promise<boolean>;
+  signup: (name: string, email: string, password: string, role: "Faculty" | "Student", matricNo?: string, department?: string, level?: string, courses?: string[]) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
 };
@@ -64,7 +65,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           role: foundUser.role,
           matricNo: foundUser.matricNo,
           department: foundUser.department,
-          level: foundUser.level
+          level: foundUser.level,
+          courses: foundUser.courses || []
         };
         setUser(sessionUser);
         localStorage.setItem("veritas_session", JSON.stringify(sessionUser));
@@ -75,7 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return false; // Login failed
   };
 
-  const signup = async (name: string, email: string, password: string, role: "Faculty" | "Student", matricNo?: string, department?: string, level?: string): Promise<boolean> => {
+  const signup = async (name: string, email: string, password: string, role: "Faculty" | "Student", matricNo?: string, department?: string, level?: string, courses?: string[]): Promise<boolean> => {
     // Get existing users
     const usersStr = localStorage.getItem("veritas_users");
     const users = usersStr ? JSON.parse(usersStr) : [];
@@ -94,7 +96,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       role,
       matricNo,
       department,
-      level
+      level,
+      courses: courses || []
     };
 
     // Save to local storage

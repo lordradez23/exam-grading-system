@@ -49,37 +49,38 @@ export default function StudentDashboard() {
 
         {/* Results List */}
         <div className="space-y-4">
-          <div className="flex justify-between items-center p-4 rounded border border-[var(--border)] bg-[var(--accent)]/5 hover:bg-[var(--accent)]/10 transition-colors">
-            <div>
-              <div className="font-mono text-xs text-[var(--muted)] mb-1">CSC 401</div>
-              <div className="text-base font-semibold">Software Engineering II</div>
+          {(!user.courses || user.courses.length === 0) ? (
+            <div className="p-8 text-center border border-[var(--border)] border-dashed rounded-xl text-[var(--muted)]">
+              No courses registered for the current semester.
             </div>
-            <div className="font-bold text-2xl text-green-500">A</div>
-          </div>
-          
-          <div className="flex justify-between items-center p-4 rounded border border-[var(--border)] bg-[var(--accent)]/5 hover:bg-[var(--accent)]/10 transition-colors">
-            <div>
-              <div className="font-mono text-xs text-[var(--muted)] mb-1">CSC 411</div>
-              <div className="text-base font-semibold">Artificial Intelligence</div>
-            </div>
-            <div className="font-bold text-2xl text-blue-500">B</div>
-          </div>
-          
-          <div className="flex justify-between items-center p-4 rounded border border-[var(--border)] bg-[var(--accent)]/5 hover:bg-[var(--accent)]/10 transition-colors">
-            <div>
-              <div className="font-mono text-xs text-[var(--muted)] mb-1">CSC 421</div>
-              <div className="text-base font-semibold">Database Systems</div>
-            </div>
-            <div className="font-bold text-2xl text-green-500">A</div>
-          </div>
-
-          <div className="flex justify-between items-center p-4 rounded border border-[var(--border)] bg-[var(--accent)]/5 hover:bg-[var(--accent)]/10 transition-colors">
-            <div>
-              <div className="font-mono text-xs text-[var(--muted)] mb-1">MTH 401</div>
-              <div className="text-base font-semibold">Numerical Analysis</div>
-            </div>
-            <div className="font-bold text-2xl text-yellow-500">C</div>
-          </div>
+          ) : (
+            user.courses.map((courseId) => {
+              // Generate mock details deterministically based on courseId
+              const isA = courseId.includes("401") || courseId.includes("421");
+              const isB = courseId.includes("411");
+              const grade = isA ? "A" : (isB ? "B" : "C");
+              const gradeColor = grade === "A" ? "text-green-500" : (grade === "B" ? "text-blue-500" : "text-yellow-500");
+              
+              const mockNames: Record<string, string> = {
+                "CSC 401": "Software Engineering II",
+                "CSC 411": "Artificial Intelligence",
+                "CSC 421": "Database Systems",
+                "MTH 401": "Numerical Analysis",
+                "GST 101": "Use of English",
+                "PHY 101": "General Physics"
+              };
+              
+              return (
+                <div key={courseId} className="flex justify-between items-center p-4 rounded border border-[var(--border)] bg-[var(--accent)]/5 hover:bg-[var(--accent)]/10 transition-colors">
+                  <div>
+                    <div className="font-mono text-xs text-[var(--muted)] mb-1">{courseId}</div>
+                    <div className="text-base font-semibold">{mockNames[courseId] || "Course Topic"}</div>
+                  </div>
+                  <div className={`font-bold text-2xl ${gradeColor}`}>{grade}</div>
+                </div>
+              );
+            })
+          )}
         </div>
 
         {/* Footer actions */}

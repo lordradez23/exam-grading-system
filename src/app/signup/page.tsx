@@ -6,6 +6,15 @@ import { useRouter } from "next/navigation";
 import BackButton from "@/components/BackButton";
 import Link from "next/link";
 
+const AVAILABLE_COURSES = [
+  { id: "CSC 401", name: "Software Engineering II" },
+  { id: "CSC 411", name: "Artificial Intelligence" },
+  { id: "CSC 421", name: "Database Systems" },
+  { id: "MTH 401", name: "Numerical Analysis" },
+  { id: "GST 101", name: "Use of English" },
+  { id: "PHY 101", name: "General Physics" }
+];
+
 export default function SignUp() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -13,9 +22,18 @@ export default function SignUp() {
   const [matricNo, setMatricNo] = useState("");
   const [department, setDepartment] = useState("");
   const [level, setLevel] = useState("");
+  const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
   const [error, setError] = useState("");
   const { signup } = useAuth();
   const router = useRouter();
+
+  const toggleCourse = (courseId: string) => {
+    setSelectedCourses(prev => 
+      prev.includes(courseId) 
+        ? prev.filter(id => id !== courseId)
+        : [...prev, courseId]
+    );
+  };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,7 +44,12 @@ export default function SignUp() {
       return;
     }
 
-    const success = await signup(name, email, password, "Student", matricNo, department, level);
+    if (selectedCourses.length === 0) {
+      setError("Please select at least one course.");
+      return;
+    }
+
+    const success = await signup(name, email, password, "Student", matricNo, department, level, selectedCourses);
     if (success) {
       // Redirect to login after successful signup
       router.push("/login?registered=true");
@@ -123,6 +146,26 @@ export default function SignUp() {
                 <option value="400L">400L</option>
                 <option value="500L">500L</option>
               </select>
+            </div>
+            
+            <div className="pt-4 mt-4 border-t border-[var(--border)]">
+              <label className="block text-sm font-medium mb-3 text-[var(--muted)]">Select Courses</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                {AVAILABLE_COURSES.map(course => (
+                  <label key={course.id} className={`flex items-start gap-3 p-3 rounded border cursor-pointer transition-colors ${selectedCourses.includes(course.id) ? 'bg-[var(--foreground)]/5 border-[var(--foreground)]' : 'bg-[var(--accent)]/5 border-[var(--border)] hover:border-[var(--muted)]'}`}>
+                    <input 
+                      type="checkbox" 
+                      className="mt-1"
+                      checked={selectedCourses.includes(course.id)}
+                      onChange={() => toggleCourse(course.id)}
+                    />
+                    <div className="flex flex-col">
+                      <span className="text-xs font-mono font-bold">{course.id}</span>
+                      <span className="text-xs text-[var(--muted)] line-clamp-1">{course.name}</span>
+                    </div>
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
           
