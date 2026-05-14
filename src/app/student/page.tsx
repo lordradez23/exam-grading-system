@@ -25,42 +25,65 @@ export default function StudentDashboard() {
   }
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-8 py-12 fade-in">
+    <div className="w-full max-w-4xl mx-auto px-8 py-12 fade-in">
       <BackButton />
       
-      {/* Profile Header */}
-      <div className="flex flex-col md:flex-row gap-8 items-start md:items-center p-8 border border-[var(--border)] rounded-2xl bg-[var(--background)] shadow-lg relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-[var(--foreground)] opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4"></div>
+      <div className="mt-8 rounded-xl border border-[var(--border)] bg-[var(--background)] shadow-2xl p-8">
         
-        <div className="w-32 h-32 rounded-full bg-[var(--accent)]/10 border-4 border-[var(--border)] flex items-center justify-center text-5xl font-bold text-[var(--muted)] relative z-10 shadow-inner">
-          {user.name.charAt(0)}
-        </div>
-        
-        <div className="relative z-10 flex-1">
-          <h1 className="text-4xl font-bold mb-2">{user.name}</h1>
-          <p className="text-[var(--muted)] text-lg mb-4">{user.email}</p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-[var(--muted)] font-mono">
-            <div className="p-4 bg-[var(--accent)]/5 border border-[var(--border)] rounded-xl flex flex-col">
-              <span className="text-[10px] uppercase tracking-wider opacity-60 mb-1">Matric Number</span>
-              <span className="font-semibold text-[var(--foreground)] text-base">{user.matricNo || "Not provided"}</span>
-            </div>
-            <div className="p-4 bg-[var(--accent)]/5 border border-[var(--border)] rounded-xl flex flex-col">
-              <span className="text-[10px] uppercase tracking-wider opacity-60 mb-1">Department</span>
-              <span className="font-semibold text-[var(--foreground)] text-base">{user.department || "Not provided"}</span>
-            </div>
-            <div className="p-4 bg-[var(--accent)]/5 border border-[var(--border)] rounded-xl flex flex-col">
-              <span className="text-[10px] uppercase tracking-wider opacity-60 mb-1">Level</span>
-              <span className="font-semibold text-[var(--foreground)] text-base">{user.level || "Not provided"}</span>
-            </div>
+        {/* Header Section */}
+        <div className="flex justify-between items-end mb-8 pb-6 border-b border-[var(--border)]">
+          <div>
+            <h1 className="text-2xl font-bold mb-1">Academic Snapshot</h1>
+            <p className="text-[var(--muted)] text-sm">
+              {user.matricNo || "VUG/CSC/23/8883"} • {user.department || "Computer Science"} • {user.level || "400L"}
+            </p>
+          </div>
+          <div className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] text-sm font-bold rounded-md">
+            4.62 CGPA
           </div>
         </div>
 
-        {/* Highlighted CGPA Badge */}
-        <div className="relative z-10 self-center md:self-stretch flex flex-col justify-center items-center p-8 bg-[var(--foreground)] text-[var(--background)] rounded-xl shadow-xl ml-auto min-w-[200px]">
-          <span className="text-xs font-bold tracking-widest uppercase opacity-80 mb-2">Current CGPA</span>
-          <span className="text-6xl font-extrabold tracking-tighter">4.62</span>
-          <span className="text-xs mt-2 opacity-80">First Class Honors</span>
+        {/* Results List */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center p-4 rounded border border-[var(--border)] bg-[var(--accent)]/5 hover:bg-[var(--accent)]/10 transition-colors">
+            <div>
+              <div className="font-mono text-xs text-[var(--muted)] mb-1">CSC 401</div>
+              <div className="text-base font-semibold">Software Engineering II</div>
+            </div>
+            <div className="font-bold text-2xl text-green-500">A</div>
+          </div>
+          
+          <div className="flex justify-between items-center p-4 rounded border border-[var(--border)] bg-[var(--accent)]/5 hover:bg-[var(--accent)]/10 transition-colors">
+            <div>
+              <div className="font-mono text-xs text-[var(--muted)] mb-1">CSC 411</div>
+              <div className="text-base font-semibold">Artificial Intelligence</div>
+            </div>
+            <div className="font-bold text-2xl text-blue-500">B</div>
+          </div>
+          
+          <div className="flex justify-between items-center p-4 rounded border border-[var(--border)] bg-[var(--accent)]/5 hover:bg-[var(--accent)]/10 transition-colors">
+            <div>
+              <div className="font-mono text-xs text-[var(--muted)] mb-1">CSC 421</div>
+              <div className="text-base font-semibold">Database Systems</div>
+            </div>
+            <div className="font-bold text-2xl text-green-500">A</div>
+          </div>
+
+          <div className="flex justify-between items-center p-4 rounded border border-[var(--border)] bg-[var(--accent)]/5 hover:bg-[var(--accent)]/10 transition-colors">
+            <div>
+              <div className="font-mono text-xs text-[var(--muted)] mb-1">MTH 401</div>
+              <div className="text-base font-semibold">Numerical Analysis</div>
+            </div>
+            <div className="font-bold text-2xl text-yellow-500">C</div>
+          </div>
+        </div>
+
+        {/* Footer actions */}
+        <div className="mt-8 pt-6 border-t border-[var(--border)] flex justify-between items-center text-sm text-[var(--muted)]">
+          <span>1st Semester Results</span>
+          <button className="px-4 py-2 bg-transparent text-[var(--foreground)] border border-[var(--border)] rounded hover:bg-[var(--accent)]/5 transition-colors font-medium">
+            Download Result Slip
+          </button>
         </div>
       </div>
     </div>
