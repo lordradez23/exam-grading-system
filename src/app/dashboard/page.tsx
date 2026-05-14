@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import BackButton from "@/components/BackButton";
+import LogoutButton from "@/components/LogoutButton";
 
 export default function FacultyDashboard() {
   const { user, isLoading } = useAuth();
@@ -42,9 +43,12 @@ export default function FacultyDashboard() {
           <h1 className="text-3xl font-bold mb-2">Faculty Dashboard</h1>
           <p className="text-[var(--muted)]">Welcome back, {user.name}. Here is your academic overview.</p>
         </div>
-        <button className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] font-medium rounded text-sm hover:opacity-90">
-          + Upload Batch Grades
-        </button>
+        <div className="flex gap-4">
+          <button className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] font-medium rounded text-sm hover:opacity-90">
+            + Upload Batch Grades
+          </button>
+          <LogoutButton />
+        </div>
       </div>
 
       {/* Metrics Row */}

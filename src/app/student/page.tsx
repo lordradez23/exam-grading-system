@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import BackButton from "@/components/BackButton";
+import LogoutButton from "@/components/LogoutButton";
 
 export default function StudentDashboard() {
   const { user, isLoading } = useAuth();
@@ -38,8 +39,11 @@ export default function StudentDashboard() {
               {user.matricNo || "VUG/CSC/23/8883"} • {user.department || "Computer Science"} • {user.level || "400L"}
             </p>
           </div>
-          <div className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] text-sm font-bold rounded-md">
-            4.62 CGPA
+          <div className="flex flex-col items-end gap-3">
+            <div className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] text-sm font-bold rounded-md">
+              4.62 CGPA
+            </div>
+            <LogoutButton />
           </div>
         </div>
 

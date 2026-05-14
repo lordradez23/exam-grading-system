@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import LogoutButton from "@/components/LogoutButton";
 
 export default function Home() {
   const { user } = useAuth();
@@ -26,10 +27,11 @@ export default function Home() {
                     ? "Your centralized academic portal. View your current semester grades, CGPA, and track your progress securely."
                     : "Your faculty portal. Manage student records, process examination scores, and approve pending grades."}
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4 pt-6">
+                <div className="flex flex-col sm:flex-row items-center gap-4 pt-6">
                   <Link href={user.role === "Student" ? "/student" : "/dashboard"} className="px-6 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-md font-semibold hover:opacity-90 transition-opacity text-center flex items-center justify-center gap-2">
                     Enter {user.role === "Student" ? "Student Portal" : "Faculty Dashboard"} <span className="text-lg">&rarr;</span>
                   </Link>
+                  <LogoutButton />
                 </div>
               </>
             ) : (
