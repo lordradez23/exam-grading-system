@@ -10,6 +10,9 @@ export default function SignUp() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [matricNo, setMatricNo] = useState("");
+  const [department, setDepartment] = useState("");
+  const [level, setLevel] = useState("");
   const [error, setError] = useState("");
   const { signup } = useAuth();
   const router = useRouter();
@@ -18,12 +21,12 @@ export default function SignUp() {
     e.preventDefault();
     setError("");
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !matricNo || !department || !level) {
       setError("Please fill in all fields.");
       return;
     }
 
-    const success = await signup(name, email, password, "Student");
+    const success = await signup(name, email, password, "Student", matricNo, department, level);
     if (success) {
       // Redirect to login after successful signup
       router.push("/login?registered=true");
@@ -82,7 +85,48 @@ export default function SignUp() {
             />
           </div>
           
-          <button type="submit" className="w-full py-3 mt-6 bg-[var(--foreground)] text-[var(--background)] font-semibold rounded hover:opacity-90 transition-opacity">
+          <div className="pt-4 border-t border-[var(--border)] space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-1 text-[var(--muted)]">Matriculation Number</label>
+              <input 
+                type="text" 
+                value={matricNo}
+                onChange={(e) => setMatricNo(e.target.value)}
+                className="w-full p-3 rounded bg-[var(--accent)]/5 border border-[var(--border)] focus:outline-none focus:border-[var(--foreground)] transition-colors"
+                placeholder="VUG/CSC/23/8883"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1 text-[var(--muted)]">Department</label>
+              <input 
+                type="text" 
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
+                className="w-full p-3 rounded bg-[var(--accent)]/5 border border-[var(--border)] focus:outline-none focus:border-[var(--foreground)] transition-colors"
+                placeholder="Computer Science"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1 text-[var(--muted)]">Level</label>
+              <select 
+                value={level}
+                onChange={(e) => setLevel(e.target.value)}
+                className="w-full p-3 rounded bg-[var(--accent)]/5 border border-[var(--border)] focus:outline-none focus:border-[var(--foreground)] transition-colors"
+                required
+              >
+                <option value="" disabled>Select Level</option>
+                <option value="100L">100L</option>
+                <option value="200L">200L</option>
+                <option value="300L">300L</option>
+                <option value="400L">400L</option>
+                <option value="500L">500L</option>
+              </select>
+            </div>
+          </div>
+          
+          <button type="submit" className="w-full py-3 mt-8 bg-[var(--foreground)] text-[var(--background)] font-semibold rounded hover:opacity-90 transition-opacity">
             Register Student Account
           </button>
         </form>

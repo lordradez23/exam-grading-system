@@ -77,7 +77,7 @@ export default function Home() {
               <>
                 <div className="flex justify-between items-center mb-6 pb-4 border-b border-[var(--border)]">
                   <div className="font-semibold text-sm">Academic Snapshot</div>
-                  <div className="px-3 py-1 bg-[var(--foreground)] text-[var(--background)] text-xs font-bold rounded">4.21 CGPA</div>
+                  <div className="px-3 py-1 bg-[var(--foreground)] text-[var(--background)] text-xs font-bold rounded">4.62 CGPA</div>
                 </div>
                 <div className="space-y-4">
                   <div className="flex justify-between items-center p-3 rounded border border-[var(--border)] bg-[var(--accent)]/5">
