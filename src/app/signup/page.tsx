@@ -16,19 +16,22 @@ export default function SignUp() {
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
   const [customCourse, setCustomCourse] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const { signup } = useAuth();
   const router = useRouter();
 
   const handleAddCourse = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (customCourse.trim() && !selectedCourses.includes(customCourse.trim().toUpperCase())) {
-      setSelectedCourses([...selectedCourses, customCourse.trim().toUpperCase()]);
+    const code = customCourse.trim().toUpperCase();
+    if (code && !selectedCourses.includes(code)) {
+      setSelectedCourses((prev) => [...prev, code]);
       setCustomCourse("");
     }
   };
 
-  const removeCourse = (courseId: string) => {
-    setSelectedCourses(selectedCourses.filter(id => id !== courseId));
+  const removeCourse = (code: string) => {
+    setSelectedCourses((prev) => prev.filter((c) => c !== code));
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -39,15 +42,16 @@ export default function SignUp() {
       setError("Please fill in all fields.");
       return;
     }
-
     if (selectedCourses.length === 0) {
-      setError("Please select at least one course.");
+      setError("Please add at least one course.");
       return;
     }
 
+    setIsSubmitting(true);
     const success = await signup(name, email, password, "Student", matricNo, department, level, selectedCourses);
+    setIsSubmitting(false);
+
     if (success) {
-      // Redirect to login after successful signup
       router.push("/login?registered=true");
     } else {
       setError("Email is already in use.");
@@ -58,11 +62,13 @@ export default function SignUp() {
     <div className="w-full max-w-md mx-auto px-8 py-20 fade-in">
       <BackButton href="/" />
       <div className="p-8 border border-[var(--border)] rounded-xl bg-[var(--background)] shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--foreground)] to-transparent opacity-50"></div>
-        
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--foreground)] to-transparent opacity-50" />
+
         <h1 className="text-2xl font-bold mb-2 text-center">Create Account</h1>
-        <p className="text-[var(--muted)] text-sm mb-8 text-center">Register to access the grading system</p>
-        
+        <p className="text-[var(--muted)] text-sm mb-8 text-center">
+          Register to access the grading system
+        </p>
+
         {error && (
           <div className="mb-4 p-3 bg-red-500/10 border border-red-500/50 text-red-600 text-sm rounded text-center">
             {error}
@@ -72,8 +78,8 @@ export default function SignUp() {
         <form className="space-y-4" onSubmit={handleSignUp}>
           <div>
             <label className="block text-sm font-medium mb-1 text-[var(--muted)]">Full Name</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full p-3 rounded bg-[var(--accent)]/5 border border-[var(--border)] focus:outline-none focus:border-[var(--foreground)] transition-colors"
@@ -81,10 +87,11 @@ export default function SignUp() {
               required
             />
           </div>
+
           <div>
             <label className="block text-sm font-medium mb-1 text-[var(--muted)]">Email Address</label>
-            <input 
-              type="email" 
+            <input
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full p-3 rounded bg-[var(--accent)]/5 border border-[var(--border)] focus:outline-none focus:border-[var(--foreground)] transition-colors"
@@ -92,10 +99,11 @@ export default function SignUp() {
               required
             />
           </div>
+
           <div>
             <label className="block text-sm font-medium mb-1 text-[var(--muted)]">Password</label>
-            <input 
-              type="password" 
+            <input
+              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full p-3 rounded bg-[var(--accent)]/5 border border-[var(--border)] focus:outline-none focus:border-[var(--foreground)] transition-colors"
@@ -103,12 +111,12 @@ export default function SignUp() {
               required
             />
           </div>
-          
+
           <div className="pt-4 border-t border-[var(--border)] space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1 text-[var(--muted)]">Matriculation Number</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={matricNo}
                 onChange={(e) => setMatricNo(e.target.value)}
                 className="w-full p-3 rounded bg-[var(--accent)]/5 border border-[var(--border)] focus:outline-none focus:border-[var(--foreground)] transition-colors"
@@ -116,10 +124,11 @@ export default function SignUp() {
                 required
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium mb-1 text-[var(--muted)]">Department</label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
                 className="w-full p-3 rounded bg-[var(--accent)]/5 border border-[var(--border)] focus:outline-none focus:border-[var(--foreground)] transition-colors"
@@ -127,9 +136,10 @@ export default function SignUp() {
                 required
               />
             </div>
+
             <div>
               <label className="block text-sm font-medium mb-1 text-[var(--muted)]">Level</label>
-              <select 
+              <select
                 value={level}
                 onChange={(e) => setLevel(e.target.value)}
                 className="w-full p-3 rounded bg-[var(--accent)]/5 border border-[var(--border)] focus:outline-none focus:border-[var(--foreground)] transition-colors"
@@ -143,36 +153,37 @@ export default function SignUp() {
                 <option value="500L">500L</option>
               </select>
             </div>
-            
-            <div className="pt-4 mt-4 border-t border-[var(--border)]">
-              <label className="block text-sm font-medium mb-3 text-[var(--muted)]">Add Registered Courses</label>
+
+            <div className="pt-4 border-t border-[var(--border)]">
+              <label className="block text-sm font-medium mb-3 text-[var(--muted)]">
+                Add Registered Courses
+              </label>
               <div className="flex gap-2 mb-3">
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={customCourse}
                   onChange={(e) => setCustomCourse(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter") handleAddCourse(e as any); }}
                   className="flex-1 p-3 rounded bg-[var(--accent)]/5 border border-[var(--border)] focus:outline-none focus:border-[var(--foreground)] transition-colors uppercase"
                   placeholder="e.g. CSC 401"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      handleAddCourse(e as any);
-                    }
-                  }}
                 />
-                <button 
+                <button
                   onClick={handleAddCourse}
                   className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] font-medium rounded hover:opacity-90 transition-opacity"
                 >
                   Add
                 </button>
               </div>
-              
+
               {selectedCourses.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-4 p-3 border border-[var(--border)] border-dashed rounded bg-[var(--background)]/50 min-h-[60px]">
-                  {selectedCourses.map(course => (
-                    <div key={course} className="flex items-center gap-2 px-3 py-1 bg-[var(--foreground)] text-[var(--background)] rounded-full text-xs font-bold">
+                <div className="flex flex-wrap gap-2 mt-4 p-3 border border-dashed border-[var(--border)] rounded bg-[var(--background)]/50 min-h-[60px]">
+                  {selectedCourses.map((course) => (
+                    <div
+                      key={course}
+                      className="flex items-center gap-2 px-3 py-1 bg-[var(--foreground)] text-[var(--background)] rounded-full text-xs font-bold"
+                    >
                       {course}
-                      <button 
+                      <button
                         onClick={(e) => { e.preventDefault(); removeCourse(course); }}
                         className="hover:text-red-400 transition-colors"
                       >
@@ -184,14 +195,23 @@ export default function SignUp() {
               )}
             </div>
           </div>
-          
-          <button type="submit" className="w-full py-3 mt-8 bg-[var(--foreground)] text-[var(--background)] font-semibold rounded hover:opacity-90 transition-opacity">
-            Register Student Account
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className={`w-full py-3 mt-8 bg-[var(--foreground)] text-[var(--background)] font-semibold rounded transition-opacity ${
+              isSubmitting ? "opacity-50 cursor-not-allowed" : "hover:opacity-90"
+            }`}
+          >
+            {isSubmitting ? "Creating account..." : "Register Student Account"}
           </button>
         </form>
 
         <div className="mt-6 text-center text-sm text-[var(--muted)] border-t border-[var(--border)] pt-6">
-          Already have an account? <Link href="/login" className="text-[var(--foreground)] hover:underline font-medium">Sign in</Link>
+          Already have an account?{" "}
+          <Link href="/login" className="text-[var(--foreground)] hover:underline font-medium">
+            Sign in
+          </Link>
         </div>
       </div>
     </div>
