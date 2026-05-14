@@ -35,17 +35,19 @@ export default function Login() {
     }
 
     const success = await login(email, password);
-    if (success) {
-      router.push("/");
-    } else {
+    if (!success) {
       setError("Invalid email or password. Please try again or create an account.");
     }
   };
 
-  // If already logged in, redirect to home
+  // If already logged in, redirect to respective dashboard
   useEffect(() => {
     if (user) {
-      router.push("/");
+      if (user.role === "Admin" || user.role === "Faculty") {
+        router.push("/dashboard");
+      } else {
+        router.push("/student");
+      }
     }
   }, [user, router]);
 
