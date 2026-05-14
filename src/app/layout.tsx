@@ -26,6 +26,7 @@ export default function RootLayout({
         style={{ '--font-inter': '"Inter", sans-serif', '--font-geist-mono': 'monospace' } as React.CSSProperties}
       >
         <AuthProvider>
+          <Header />
           <main className="flex-grow flex flex-col items-center justify-center">
             {children}
           </main>

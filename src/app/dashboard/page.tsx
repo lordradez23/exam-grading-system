@@ -2,13 +2,15 @@
 
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import BackButton from "@/components/BackButton";
 import LogoutButton from "@/components/LogoutButton";
 
 export default function FacultyDashboard() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Protect Route
   useEffect(() => {
@@ -20,6 +22,22 @@ export default function FacultyDashboard() {
       }
     }
   }, [user, isLoading, router]);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsUploading(true);
+      // Simulate file processing and upload delay
+      setTimeout(() => {
+        setIsUploading(false);
+        alert(`Successfully processed ${file.name}. Grades have been uploaded!`);
+        // Reset the input so the same file can be uploaded again if needed
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      }, 1500);
+    }
+  };
 
   if (isLoading || !user || (user.role !== "Admin" && user.role !== "Faculty")) {
     return <div className="p-20 text-center text-[var(--muted)]">Loading dashboard...</div>;
@@ -44,8 +62,19 @@ export default function FacultyDashboard() {
           <p className="text-[var(--muted)]">Welcome back, {user.name}. Here is your academic overview.</p>
         </div>
         <div className="flex gap-4">
-          <button className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] font-medium rounded text-sm hover:opacity-90">
-            + Upload Batch Grades
+          <input 
+            type="file" 
+            accept=".csv,.xlsx" 
+            className="hidden" 
+            ref={fileInputRef} 
+            onChange={handleFileUpload} 
+          />
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className={`px-4 py-2 bg-[var(--foreground)] text-[var(--background)] font-medium rounded text-sm transition-opacity ${isUploading ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'}`}
+          >
+            {isUploading ? 'Uploading...' : '+ Upload Batch Grades'}
           </button>
           <LogoutButton />
         </div>
