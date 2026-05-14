@@ -3,18 +3,6 @@
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
-import BackButton from "@/components/BackButton";
-import Link from "next/link";
-
-const AVAILABLE_COURSES = [
-  { id: "CSC 401", name: "Software Engineering II" },
-  { id: "CSC 411", name: "Artificial Intelligence" },
-  { id: "CSC 421", name: "Database Systems" },
-  { id: "MTH 401", name: "Numerical Analysis" },
-  { id: "GST 101", name: "Use of English" },
-  { id: "PHY 101", name: "General Physics" }
-];
-
 export default function SignUp() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -23,16 +11,21 @@ export default function SignUp() {
   const [department, setDepartment] = useState("");
   const [level, setLevel] = useState("");
   const [selectedCourses, setSelectedCourses] = useState<string[]>([]);
+  const [customCourse, setCustomCourse] = useState("");
   const [error, setError] = useState("");
   const { signup } = useAuth();
   const router = useRouter();
 
-  const toggleCourse = (courseId: string) => {
-    setSelectedCourses(prev => 
-      prev.includes(courseId) 
-        ? prev.filter(id => id !== courseId)
-        : [...prev, courseId]
-    );
+  const handleAddCourse = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (customCourse.trim() && !selectedCourses.includes(customCourse.trim().toUpperCase())) {
+      setSelectedCourses([...selectedCourses, customCourse.trim().toUpperCase()]);
+      setCustomCourse("");
+    }
+  };
+
+  const removeCourse = (courseId: string) => {
+    setSelectedCourses(selectedCourses.filter(id => id !== courseId));
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -149,23 +142,43 @@ export default function SignUp() {
             </div>
             
             <div className="pt-4 mt-4 border-t border-[var(--border)]">
-              <label className="block text-sm font-medium mb-3 text-[var(--muted)]">Select Courses</label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-                {AVAILABLE_COURSES.map(course => (
-                  <label key={course.id} className={`flex items-start gap-3 p-3 rounded border cursor-pointer transition-colors ${selectedCourses.includes(course.id) ? 'bg-[var(--foreground)]/5 border-[var(--foreground)]' : 'bg-[var(--accent)]/5 border-[var(--border)] hover:border-[var(--muted)]'}`}>
-                    <input 
-                      type="checkbox" 
-                      className="mt-1"
-                      checked={selectedCourses.includes(course.id)}
-                      onChange={() => toggleCourse(course.id)}
-                    />
-                    <div className="flex flex-col">
-                      <span className="text-xs font-mono font-bold">{course.id}</span>
-                      <span className="text-xs text-[var(--muted)] line-clamp-1">{course.name}</span>
-                    </div>
-                  </label>
-                ))}
+              <label className="block text-sm font-medium mb-3 text-[var(--muted)]">Add Registered Courses</label>
+              <div className="flex gap-2 mb-3">
+                <input 
+                  type="text" 
+                  value={customCourse}
+                  onChange={(e) => setCustomCourse(e.target.value)}
+                  className="flex-1 p-3 rounded bg-[var(--accent)]/5 border border-[var(--border)] focus:outline-none focus:border-[var(--foreground)] transition-colors uppercase"
+                  placeholder="e.g. CSC 401"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleAddCourse(e as any);
+                    }
+                  }}
+                />
+                <button 
+                  onClick={handleAddCourse}
+                  className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] font-medium rounded hover:opacity-90 transition-opacity"
+                >
+                  Add
+                </button>
               </div>
+              
+              {selectedCourses.length > 0 && (
+                <div className="flex flex-wrap gap-2 mt-4 p-3 border border-[var(--border)] border-dashed rounded bg-[var(--background)]/50 min-h-[60px]">
+                  {selectedCourses.map(course => (
+                    <div key={course} className="flex items-center gap-2 px-3 py-1 bg-[var(--foreground)] text-[var(--background)] rounded-full text-xs font-bold">
+                      {course}
+                      <button 
+                        onClick={(e) => { e.preventDefault(); removeCourse(course); }}
+                        className="hover:text-red-400 transition-colors"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           
