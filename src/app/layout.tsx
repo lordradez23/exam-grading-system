@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { ToastProvider } from "@/context/ToastContext";
 import Header from "@/components/Header";
 export const metadata: Metadata = {
   title: "Veritas University | Examination Grading & Query System",
@@ -26,10 +27,12 @@ export default function RootLayout({
         style={{ '--font-inter': '"Inter", sans-serif', '--font-geist-mono': 'monospace' } as React.CSSProperties}
       >
         <AuthProvider>
-          <Header />
-          <main className="flex-grow flex flex-col items-center justify-center">
-            {children}
-          </main>
+          <ToastProvider>
+            <Header />
+            <main className="flex-grow flex flex-col items-center justify-center">
+              {children}
+            </main>
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>

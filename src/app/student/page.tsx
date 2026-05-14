@@ -50,8 +50,18 @@ export default function StudentDashboard() {
         {/* Results List */}
         <div className="space-y-4">
           {(!user.courses || user.courses.length === 0) ? (
-            <div className="p-8 text-center border border-[var(--border)] border-dashed rounded-xl text-[var(--muted)]">
-              No courses registered for the current semester.
+            <div className="p-12 flex flex-col items-center justify-center border border-[var(--border)] border-dashed rounded-xl bg-[var(--accent)]/5 text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--muted)] mb-4">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              <h3 className="text-lg font-bold mb-1">No Courses Found</h3>
+              <p className="text-[var(--muted)] text-sm max-w-sm">
+                You haven't registered for any courses this semester. Please contact your departmental advisor or the registry to update your course enrollment list.
+              </p>
             </div>
           ) : (
             user.courses.map((courseId) => {
@@ -86,7 +96,7 @@ export default function StudentDashboard() {
         {/* Footer actions */}
         <div className="mt-8 pt-6 border-t border-[var(--border)] flex justify-between items-center text-sm text-[var(--muted)]">
           <span>1st Semester Results</span>
-          <button className="px-4 py-2 bg-transparent text-[var(--foreground)] border border-[var(--border)] rounded hover:bg-[var(--accent)]/5 transition-colors font-medium">
+          <button onClick={() => window.print()} className="px-4 py-2 bg-transparent text-[var(--foreground)] border border-[var(--border)] rounded hover:bg-[var(--accent)]/5 transition-colors font-medium">
             Download Result Slip
           </button>
         </div>
