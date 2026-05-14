@@ -40,6 +40,71 @@ We are actively polishing the frontend to premium standards before migrating to 
 - **PostgreSQL & Multer**: Replacing the mock CSV upload with actual server-side `.csv` parsing, curve calculation, and bulk database inserts.
 - **JWT Cryptography**: Upgrading the mock LocalStorage context to stateless, HTTP-only secure cookies with Bcrypt password hashing.
 
+## System Architecture
+
+The following diagram illustrates the current frontend architecture and the planned real-time backend integration.
+
+```mermaid
+graph TD
+    %% Frontend Components
+    subgraph Frontend [Next.js Client Application]
+        UI[User Interface - React/Tailwind]
+        State[Local Context - Mock Auth & Toasts]
+        Routing[App Router - /student, /dashboard]
+    end
+
+    %% Planned Backend Integration
+    subgraph Backend [Planned Node.js / Supabase Backend]
+        API[REST & WebSocket APIs]
+        Auth[JWT Authentication]
+        Parser[CSV/XLSX Parser Module]
+    end
+
+    %% Database Layer
+    subgraph Database [Relational Database]
+        DB[(PostgreSQL Database)]
+        Triggers[Real-time Triggers - pg_notify]
+    end
+
+    %% Connections
+    UI <-->|User Interactions| State
+    State <-->|HTTP/WS Connections| API
+    API <-->|Validates| Auth
+    API <-->|Queries & Updates| DB
+    Parser -->|Bulk Inserts| DB
+    Triggers -->|Broadcasts Updates| API
+```
+
+## Detailed Project Structure
+
+The project is organized using the Next.js 15+ App Router paradigm. Below is the detailed directory structure:
+
+```text
+exam-grading-system/
+├── src/
+│   ├── app/                      # Next.js App Router (Pages & Layouts)
+│   │   ├── dashboard/            # Faculty/Admin Portal
+│   │   │   └── page.tsx          # Admin data grid, bulk actions, and modals
+│   │   ├── student/              # Student Portal
+│   │   │   └── page.tsx          # Transcripts, analytics, and dispute system
+│   │   ├── login/                # Authentication routing
+│   │   ├── signup/               # Registration routing
+│   │   ├── globals.css           # Global Tailwind utilities and Print styles
+│   │   ├── layout.tsx            # Root HTML layout and Context Providers
+│   │   └── page.tsx              # Landing page
+│   ├── components/               # Reusable UI Elements
+│   │   ├── Header.tsx            # Global navigation bar
+│   │   ├── BackButton.tsx        # Utility navigation
+│   │   └── LogoutButton.tsx      # Authentication utility
+│   └── context/                  # React Context for State Management
+│       ├── AuthContext.tsx       # Manages mock user sessions and roles
+│       └── ToastContext.tsx      # Custom non-blocking notification system
+├── public/                       # Static assets (images, icons)
+├── package.json                  # Dependencies and scripts
+├── tailwind.config.ts            # TailwindCSS configuration
+└── README.md                     # Project documentation
+```
+
 ## Getting Started
 
 First, install the necessary dependencies:
