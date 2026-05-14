@@ -93,13 +93,13 @@ export default function FacultyDashboard() {
     }
   };
 
-  if (isLoading || !user || (user.role !== "Admin" && user.role !== "Faculty")) {
-    return <div className="p-20 text-center text-[var(--muted)]">Loading dashboard...</div>;
-  }
-
   // Search & Filter Logic
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+
+  if (isLoading || !user || (user.role !== "Admin" && user.role !== "Faculty")) {
+    return <div className="p-20 text-center text-[var(--muted)]">Loading dashboard...</div>;
+  }
 
   const filteredSubmissions = recentSubmissions.filter(sub => {
     const matchesSearch = sub.matric.toLowerCase().includes(searchTerm.toLowerCase()) || 
