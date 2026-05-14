@@ -43,8 +43,13 @@ export default function Login() {
   };
 
   // If already logged in, redirect to home
+  useEffect(() => {
+    if (user) {
+      router.push("/");
+    }
+  }, [user, router]);
+
   if (user) {
-    router.push("/");
     return null;
   }
 
